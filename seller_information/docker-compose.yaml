@@ -1,0 +1,17 @@
+services:
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: aline
+      MONGO_INITDB_ROOT_PASSWORD: aline
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: aline
+      ME_CONFIG_MONGODB_ADMINPASSWORD: aline
+      ME_CONFIG_MONGODB_URL: mongodb://aline:aline@mongo:27017/
