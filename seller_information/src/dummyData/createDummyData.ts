@@ -1,4 +1,8 @@
+import { config } from 'dotenv';
+
 export class DummyData{
+
+    private DUMMY_SELLERS = Number(process.env.DUMMY_SELLERS);
 
     dummySeller = {
         "seller_id": 0,
@@ -9,7 +13,7 @@ export class DummyData{
         "notes": ""
     }
 
-    generateDummySeller(quantity) {
+    generateDummySeller() {
 
         let tempSeller = [];
 
@@ -18,7 +22,7 @@ export class DummyData{
             tempSeller.push(this.dummySeller);
             
         } 
-        while (this.dummySeller.seller_id < quantity);
+        while (this.dummySeller.seller_id < this.DUMMY_SELLERS);
 
         return tempSeller;
     }

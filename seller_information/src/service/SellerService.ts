@@ -1,5 +1,6 @@
 import SellerRepository from "../repository/SellerRepository";
 import {ISellerService} from "./ISellerService";
+import {Request, Response} from 'express';
 
 export class SellerServices implements ISellerService{
 
@@ -9,7 +10,7 @@ export class SellerServices implements ISellerService{
         this._repository = sellerRepository;
     }
 
-    async getById(req, res) {
+    async getById(req : Request, res : Response) {
         const seller = await this._repository.getById(req, res)
         if(!req.params.id){
             res.sendStatus(400);
@@ -22,7 +23,7 @@ export class SellerServices implements ISellerService{
         }
     }
 
-    async getPage(req, res) {
+    async getPage(req : Request, res : Response) {
         try {
             return await this._repository.getById(req, res);
         }
@@ -31,7 +32,7 @@ export class SellerServices implements ISellerService{
         }
     }
 
-    async updateSeller(req, res) {
+    async updateSeller(req : Request, res : Response) {
         try {
             if(this._repository.getById(req, res) != null){
                 return await this._repository.updateSeller(req, res);
@@ -45,7 +46,7 @@ export class SellerServices implements ISellerService{
         }
     }
 
-    async createSeller(req, res) {
+    async createSeller(req : Request, res : Response) {
         try {
             this._repository.createSeller(req, res);
         }
@@ -54,7 +55,7 @@ export class SellerServices implements ISellerService{
         }
     }
 
-    async createDummyData(req, res) {
+    async createDummyData(req : Request, res : Response) {
         try {
             this._repository.createDummyData(req, res);
         }

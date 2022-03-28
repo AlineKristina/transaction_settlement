@@ -8,8 +8,9 @@ export class DbConnection implements IDbConnection {
     }
 
     async connection() {
-        
-        await mongoose.connect("mongodb://admin:pass@mongo:27017/")
+        //mongodb+srv://<username>:<password>@<your-cluster-url>/test?retryWrites=true&w=majority
+        //mongodb://YourUsername:YourPasswordHere@127.0.0.1:27017/your-database-name
+        await mongoose.connect("mongodb://127.0.0.1:8081/db/sellers/").then(() => console.log("connected"))
         .catch( (err) => {
         console.log(err);
     })};

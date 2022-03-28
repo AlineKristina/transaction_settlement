@@ -9,23 +9,23 @@ export class SellerController {
         this._service = sellerService;
     }
 
-    getByID(req, res){
+    getByID(req : Request, res : Response){
         return this._service.getById(req, res);
     }
 
-    getPage(req, res){
+    getPage(req : Request, res : Response){
         return this._service.getPage(req, res);
     }
 
-    updateSeller(req, res){
+    updateSeller(req : Request, res : Response){
         return this._service.updateSeller(req, res);
     }
 
-    createSeller(req, res){
+    createSeller(req : Request, res : Response){
         return this._service.createSeller(req, res);
     }
 
-    createDummyData(req, res){
+    createDummyData(req : Request, res : Response){
         return this._service.createDummyData(req, res);
     }
 

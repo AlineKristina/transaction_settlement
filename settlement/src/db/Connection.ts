@@ -7,7 +7,7 @@ export class MongooseConnection {
     }
 
     async connection() {
-        await mongoose.connect("mongodb://admin:pass@mongo:27017/settlement")
+        await mongoose.connect("mongodb://admin:pass@mongo:27017/")
         .catch( (err) => {
         console.log(err);
     })};

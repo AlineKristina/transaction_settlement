@@ -1,38 +1,37 @@
 import {IDbConnection} from "../database/IDbConnection";
 import { DummyData } from "../dummyData/createDummyData";
-import {SellerModel} from "../model/SellerModel";
+import { SellerModel } from "../model/SellerModel";
 import { SellerSchema } from "../model/SellerSchema";
 import { ISellerRepository } from "./ISellerRepository";
-import 'dotenv/config'
+import { config } from 'dotenv';
+import { Request, Response } from "express";
+config();
 
 export default class SellerRepository implements ISellerRepository{
     
-    private _dbConnection;
+
     sellerSchema = new SellerSchema();
     sellerModel = new SellerModel(this.sellerSchema).sellerModel();
 
-
-    constructor(dbConn : IDbConnection) {
-        this._dbConnection = dbConn;
-        dbConn.connection();
+    constructor() {
     }
 
-    async getById(req, res){
+    async getById(req : Request, res : Response){
         return await this.sellerModel.findOne({seller_id: req.params.id});
     }
 
-    async getAndPaginate(req, res) {
+    async getAndPaginate(req : Request, res : Response) {
         const {page, pageSize, ...queryParameters} = req.query;
-        let index = pageSize * (page-1);
+        let index = Number(pageSize) * (Number(page)-1);
         
-        const result = await this.sellerModel.find(queryParameters).skip(index).limit(pageSize);
+        const result = await this.sellerModel.find(queryParameters).skip(index).limit(Number(pageSize));
 
         let qty = result.length;
          
         res.send(result)
     }
 
-    async createSeller(req, res) {
+    async createSeller(req : Request, res : Response) {
         const newSeller = req.body;
         console.log(newSeller)
         const seller = new this.sellerModel(req.body);
@@ -40,15 +39,15 @@ export default class SellerRepository implements ISellerRepository{
         res.sendStatus(201);
     }
 
-    async updateSeller(req, res) {
+    async updateSeller(req : Request, res : Response) {
         //await this.model.sellerModel.findByIdAndUpdate(id, { $set: reqBody }, { new: true });
         await this.sellerModel.updateOne({seller_id:req.params.id}, { $set: req.body });
         await this.sellerModel.findOne()
     }
 
-    async createDummyData(req, res) {
+    async createDummyData(req : Request, res : Response) {
         const QUANTITY = process.env.DUMMY_SELLERS || 10;
-        const dummyData = new DummyData().generateDummySeller(QUANTITY);
+        const dummyData = new DummyData().generateDummySeller();
         dummyData.forEach(async (dummyData) => {
             let tempObj = new this.sellerModel(dummyData);
             await tempObj.save();
