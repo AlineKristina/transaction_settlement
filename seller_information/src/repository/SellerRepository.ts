@@ -39,7 +39,7 @@ export default class SellerRepository implements ISellerRepository{
         console.log(req.params.id)
         console.log(req.body)
         await this.sellerModel.updateOne({seller_id:req.params.id}, {$set: req.body});
-        
+        return res.sendStatus(200);
     }
 
     async createDummyData(req : Request, res : Response) {

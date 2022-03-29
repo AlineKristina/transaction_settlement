@@ -2,11 +2,6 @@ import mongoose, { mongo } from "mongoose";
 import { MongooseConnection } from "../db/Connection";
 
 export class SellerSettlementModel {
-    private readonly _conn : MongooseConnection;
-
-    constructor(conn : MongooseConnection){
-        this._conn = conn;
-    }
 
     sellerSettlementSchema(){
         return new mongoose.Schema({
@@ -15,7 +10,7 @@ export class SellerSettlementModel {
             amount: Number,
             taxValue: Number,
             bankCode: Number,
-            bankAccount: Number
+            bankAccount: Number || null
         })
     }
 

@@ -7,7 +7,8 @@ export class MongooseConnection {
     }
 
     async connection() {
-        await mongoose.connect("mongodb://admin:pass@mongo:27017/")
+        await mongoose.connect("mongodb://localhost:27017/settlement")
+        .then(() => console.log("Connected to Monguinho."))
         .catch( (err) => {
         console.log(err);
     })};

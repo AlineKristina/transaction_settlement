@@ -3,15 +3,9 @@ import { MongooseConnection } from '../db/Connection';
 
 export class SettlementModel {
 
-    private readonly _conn : MongooseConnection;
-
-    constructor(conn : MongooseConnection){
-        this._conn = conn;
-    }
-
     settlementSchema(){
         return new mongoose.Schema({
-            settlementId: Number,
+            settlementId: String,
             settlementDate: Date,
             startDate: Date,
             endDate: Date,
@@ -22,6 +16,6 @@ export class SettlementModel {
     }
 
     settlementModel() {
-        return mongoose.model("settlement", this.settlementSchema(), "s=ettlement");
+        return mongoose.model("settlements", this.settlementSchema(), "settlements");
     }
 }

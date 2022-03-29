@@ -8,7 +8,7 @@ export class SettlementGenerator {
             "settlementDate": "2022-03-01",
             "startDate": Date.now(),
             "endDate": null
-            }
+        }
     }
-
+    
 }

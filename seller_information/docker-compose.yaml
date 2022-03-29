@@ -3,7 +3,7 @@ version: '3'
 services:
   mongo-express:
     image: mongo-express
-    container_name: newmongo
+    container_name: monguinhoexpress
     ports:
       - 8081:8081
     environment:
@@ -19,7 +19,7 @@ services:
 
   mongo:
     image: mongo
-    container_name: monguinho
+    container_name: monguinhooo
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: pass
