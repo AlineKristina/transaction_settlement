@@ -3,21 +3,27 @@ import { DbConnection } from './src/database/DbConnection';
 import SellerRepository from './src/repository/SellerRepository';
 import { SellerServices } from './src/service/SellerService';
 import bodyParser from 'body-parser';
+import swaggerUi from 'swagger-ui-express';
+import {swaggerJson} from './src/swagger/swagger';
+import express from 'express';
+import { config } from 'dotenv';
+config();
 
 const conn = () => {
     return new DbConnection().connection()
 }
 conn();
+
 const _repository = new SellerRepository()
 const _service = new SellerServices(_repository)
 //const _controller = new SellerController(_connection)
 
-import express from 'express';
-import 'dotenv/config'
-
 const serverConnection = express();
+
 serverConnection.use(bodyParser.urlencoded({extended:true}))
 serverConnection.use(express.json())
+serverConnection.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerJson))
+
 const PORT = process.env.PORT || 3000;
 
 serverConnection.get("/v1/sellers/:id", async (req, res) => {
