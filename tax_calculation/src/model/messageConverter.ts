@@ -3,8 +3,8 @@ import { json } from "express";
 export class messageConverter{
     private msg : Buffer;
     private tax : number = 6;
-    private seller_id;
-    private amount : number;
+    private seller_id : any;
+    private amount : any;
     
     constructor(msg : Buffer){
         this.msg = msg;
@@ -30,6 +30,6 @@ export class messageConverter{
             "seller_id" : this.seller_id,
             "amount" : this.amount,
             "tax_value": this.calculateTax()
-            };
+        };
     }
 }

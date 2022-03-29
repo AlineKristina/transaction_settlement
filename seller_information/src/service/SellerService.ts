@@ -11,21 +11,14 @@ export class SellerServices implements ISellerService{
     }
 
     async getById(req : Request, res : Response) {
-        const seller = await this._repository.getById(req, res)
-        if(!req.params.id){
-            res.sendStatus(400);
-        }
-        else if(seller != null){
-            return seller;
-        }
-        else {
-            res.sendStatus(404);
-        }
+        const seller = await this._repository.getById(req, res);
+        console.log(seller);
+        res.send(seller);
     }
 
     async getPage(req : Request, res : Response) {
         try {
-            return await this._repository.getById(req, res);
+            const seller = await this._repository.getAndPaginate(req, res);
         }
         catch(err){
             console.log(err);
