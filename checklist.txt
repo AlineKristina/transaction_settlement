@@ -1,0 +1,125 @@
+1.  (API) POST: v1/settlements -> Início da liquidação, criação e gravação da settlements
+
+                        {
+                            "settlementId": "4ee4cd0d-73e6-4d41-9d34-3a2618b22092",
+                            "settlementDate": "2022-03-01",
+                            "startDate": "2022-03-24 08:00",
+                            "endDate": null
+                        }
+
+2.  (API) Continuação da liquidação, busca no banco todas as transações que ocorreram dentro do período
+da liquidação. Agrupa todas as transações de um mesmo seller_id. Grava em settleSettlement
+
+        Agrupamento:    {
+                            "sellerId": 1,
+                            "amount": 5000
+                        }
+
+        Gravação:       {
+                            "sellerId": 1,
+                            "settlementId": "4ee4cd0d-73e6-4d41-9d34-3a2618b22092",
+                            "amount": 5000,
+                            "taxValue": 0,
+                            "bankAccount": null
+                        }
+
+3.  (API -> RABBIT) Envia para a queue o imposto (queue tax_calculation_request)
+
+                        {
+                            "sellerId": "1",
+                            "amount": 5000
+                        }
+
+4.  (RABBIT -> API) Recebe o imposto calculado (queue tax_calculation_response), ouve em server
+
+                        {
+                            "sellerId": "1",
+                            "amount": 5000,
+                            "taxValue": 300
+                        }
+
+5.  (this.API -> Seller.API) Solicita os dados do Seller em GET /v1/sellers/:id
+
+                        {
+                            "sellerId": 1,
+                            "name": "McDonalds",
+                            "cnpj": "90891366000190",
+                            "bankCode": 033,
+                            "bankAccount": 23456,
+                            "notes": ""
+                        }
+
+6.  (API) Atualização do imposto, verificar se todos os impostos já foram calculados.
+
+                        {
+                            "sellerId": 1,
+                            "settlementId": "4ee4cd0d-73e6-4d41-9d34-3a2618b22092",
+                            "amount": 5000,
+                            "taxValue": 300,
+                            "bankCode": 033,
+                            "bankAccount": 23456
+                        }
+
+
+7.  (API -> RABBIT) Emissão de evento na queue settlement_file_request
+
+                        {
+                            "settlementId": "4ee4cd0d-73e6-4d41-9d34-3a2618b22092",
+                            "settlementDate": "2022-03-01"
+                        }
+
+8.  (RABBIT -> API) Início da geração do arquivo de liquidação após trigger
+
+                        {
+                            "settlementId": "4ee4cd0d-73e6-4d41-9d34-3a2618b22092",
+                            "settlementDate": "2022-03-01"
+                        }
+
+9.  (API) Escrita do arquivo utilizando os dados de sellerSettlement
+
+                        {
+                            "sellerId": 1,
+                            "settlementId": "4ee4cd0d-73e6-4d41-9d34-3a2618b22092",
+                            "amount": 5000,
+                            "taxValue": 300,
+                            "bankCode": 033,
+                            "bankAccount": 23456
+                        }
+
+    Modelo de escrita:  1   5000    300     033     23456
+
+10. (API -> BANCO) Gravação em Settlements
+
+                        {
+                            "settlementId": "4ee4cd0d-73e6-4d41-9d34-3a2618b22092",
+                            "settlementDate": "2022-03-01",
+                            "startDate": "2022-03-24 08:00",
+                            "endDate": "2022-03-24 09:10",
+                            "sellersCount": 10,
+                            "transactionsCount": 100,
+                            "elapsedMiliseconds": 19292
+                        }
+
+11. (API/CONSULTA) Criação de um endpoint GET /v1/settlements que retorna a lista de registros de
+liquidações
+
+                        [
+                            {
+                                "settlementId": "4ee4cd0d-73e6-4d41-9d34-3a2618b22092",
+                                "settlementDate": "2022-03-01",
+                                "startDate": "2022-03-24 08:00",
+                                "endDate": "2022-03-24 09:10",
+                                "sellersCount": 10,
+                                "transactionsCount": 100,
+                                "elapsedMiliseconds": 19292
+                            },
+                            {
+                                "settlementId": "4ee4cd0d-73e6-4d41-9d34-3a2618b22092",
+                                "settlementDate": "2022-03-01",
+                                "startDate": "2022-03-24 10:00",
+                                "endDate": "2022-03-24 10:30",
+                                "sellersCount": 10,
+                                "transactionsCount": 100,
+                                "elapsedMiliseconds": 19292
+                            }
+                        ]

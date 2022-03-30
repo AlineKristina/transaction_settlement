@@ -7,10 +7,10 @@ import { QueueRequestConnection } from '../../events/tax_calculation_request';
 import { QueueResponseConnection } from '../../events/tax_calculation_response';
 import { EmitSettlement } from '../../events/settlement_file_request';
 import { Request, Response } from 'express';
-import http from 'http';
 
 import { config } from 'dotenv';
 import mongoose from 'mongoose'
+import axios from 'axios';
 config();
 
 export class SettlementRepository {
@@ -65,7 +65,6 @@ export class SettlementRepository {
         return await new SettlementModel().settlementModel().find({"settlementDate":"2022-03-01"});
     }
 
-        // NAO ESTÁ POSTANDO O SELLER_ID MAIS
     async postSellerSettlement(req : Request, res : Response) {
         let groupedTransactions = await this.getTransactionBySettlementDate(req, res);
         let sellerSettlementModel = this.sellerSettlementModel;
@@ -87,25 +86,15 @@ export class SettlementRepository {
 
     async getSellerInformation(id : Number){
 
-        let data = ''
+        let data;
 
-        await http.get(`http://localhost:3000/v1/sellers/${id}`, (res) => {
+        await axios.all([
+            axios.get(`http://localhost:3000/v1/sellers/${id}`).then((res) => {
+                data = res.data
+            })
+        ])
 
-            res.on('data', (chunk) => {
-                data += chunk;
-            });
-
-            res.on('end', () => {
-                console.log(JSON.parse(data))
-            });
-
-            return data;
-
-        }).on('error', (err) => {
-            console.log(err);
-        });
-        
-        return JSON.parse(data);
+        return data;
     }
 
     async getSellerSettlement(id : Number){
