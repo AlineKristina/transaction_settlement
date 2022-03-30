@@ -2,9 +2,10 @@ import express from "express";
 import { MongooseConnection } from './src/db/Connection'
 import {SettlementRepository} from './src/api/repository/repository'
 import { SettlementGenerator } from "./src/api/settlement_generator/settlement_generator";
+import { QueueResponseConnection } from "./src/events/tax_calculation_response";
 
-const conn = new MongooseConnection();
 const data = new SettlementRepository();
+const tax_response = new QueueResponseConnection();
 const app = express();
 
 //Cria massa de dados
@@ -26,6 +27,8 @@ app.get("/v1/transactions", async (req, res) => {
 app.post("/v1/sellerSettlements", async (req, res) => {
     await data.postSellerSettlement(req, res);
 })
+
+tax_response.consumeQueue();
 
 app.listen(3002, () => {
     console.log("Listening on port 3002");

@@ -1,12 +1,11 @@
 import { DummyData } from "../dummyData/createDummyData";
 import { SellerModel } from "../model/SellerModel";
 import { SellerSchema } from "../model/SellerSchema";
-import { ISellerRepository } from "./ISellerRepository";
 import { config } from 'dotenv';
 import { Request, Response } from "express";
 config();
 
-export default class SellerRepository implements ISellerRepository{
+export default class SellerRepository{
     
 
     sellerSchema = new SellerSchema();

@@ -7,7 +7,7 @@ export class QueueResponseConnection {
     
     createChannel() {
         return amqplib.connect(this._url).then((conn) => {
-            return conn.createChannel();
+            return conn.createChannel()
         })
     }
 
@@ -19,6 +19,24 @@ export class QueueResponseConnection {
                 console.log(message);
                 return message;
             })
-        })
+        });
+    }
+
+   getTaxesById(id : Number){
+        this.createChannel().then((ch) => {
+            
+            ch.consume(this._response, (msg) => {
+                console.log(msg);
+                if(msg){
+                    const message = JSON.parse(msg.content.toString());
+                    console.log(message);
+                    if(message.seller_id == id){
+                        ch.ack(msg);
+                        return message;
+                    }
+                }
+            })
+        });
+        return {taxValue:undefined};
     }
 }

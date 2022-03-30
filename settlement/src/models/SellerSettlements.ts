@@ -5,7 +5,7 @@ export class SellerSettlementModel {
 
     sellerSettlementSchema(){
         return new mongoose.Schema({
-            sellerId: Number,
+            seller_id: Number,
             settlementId: String,
             amount: Number,
             taxValue: Number,

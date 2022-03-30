@@ -1,19 +1,22 @@
 import amqplib from 'amqplib';
 
-export class QueueRequestConnection {
+export class  EmitSettlement{
 
     private _url = process.env.URL || "amqp://admin:admin@localhost:15672//";
-    private _request = process.env.RESPONSE || "tax_calculation_request";
+    private _settlement = process.env.RESPONSE || "settlement_file_request";
     
     createChannel() {
         return amqplib.connect(this._url).then((conn) => {
             return conn.createChannel();
-        })
+        });
     }
 
     sendToQueue(message : string){
         this.createChannel().then((ch) => {
-            ch.sendToQueue(this._request, Buffer.from(message));
+            ch.assertQueue(this._settlement)
+            ch.sendToQueue(this._settlement, Buffer.from(message));
         })
     }
+
+    
 }
