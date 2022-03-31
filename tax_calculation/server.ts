@@ -2,7 +2,7 @@ import "dotenv/config";
 import { Tax_Calc } from "./src/tax_calc/tax_calc";
 import express from 'express';
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 const URL = process.env.URL || "amqp://admin:admin@localhost:15672//";
 const request = process.env.REQUEST || "tax_calculation_request";
 const response = process.env.RESPONSE || "tax_calculation_response";

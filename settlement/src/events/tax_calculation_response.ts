@@ -3,16 +3,28 @@ import { SettlementRepository } from '../api/repository/repository';
 import { EmitSettlement } from './settlement_file_request'; 
 
 export class TaxCalculationResponse {
+    
+    constructor(repository : SettlementRepository) {
+        this._repository = repository;
+    }
 
     private _url = process.env.URL || "amqp://admin:admin@localhost:15672//";
     private _response = process.env.RESPONSE || "tax_calculation_response";
-    private _repository = new SettlementRepository();
+    private _repository : SettlementRepository;
     private _emitter = new EmitSettlement().sendToQueue;
-    
+
     createChannel() {
         return amqplib.connect(this._url).then((conn) => {
             return conn.createChannel()
         })
+    }
+
+    createQueue(){
+        amqplib.connect(this._url).then((conn) => {
+            conn.createChannel().then((ch) => {
+                ch.assertQueue(this._response);
+            });
+        });
     }
 
     consumeQueue(){

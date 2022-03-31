@@ -5,15 +5,25 @@ import { SettlementRepository } from '../api/repository/repository';
 export class  ListeningSettlement{
 
     private _url = process.env.URL || "amqp://admin:admin@localhost:15672//";
-    private _settlement = process.env.RESPONSE || "settlement_file_request";
+    private _settlement = process.env.RESPONSE || "settlement_file_response"
     private _settlementFile = new SettlementFile();
-    private _repository = new SettlementRepository();
+    private _repository : SettlementRepository;
+
+    constructor(repository : SettlementRepository) {
+        this._repository = repository;
+    }
     
     createChannel() {
         return amqplib.connect(this._url).then((conn) => {
             return conn.createChannel();
         });
     }
+
+    createQueue(){
+        this.createChannel().then((ch) => {
+            ch.assertQueue(this._settlement);
+        });
+    };
 
     listeningQueue(){
         this.createChannel().then((ch) => {

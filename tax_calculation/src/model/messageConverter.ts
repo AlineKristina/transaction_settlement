@@ -12,7 +12,7 @@ export class messageConverter{
     }
 
     convertMessage (){
-        const decodedJsonObject = JSON.parse(Buffer.from(this.msg.toString(), 'base64').toString('ascii')); 
+        const decodedJsonObject = JSON.parse(this.msg.toString()); 
         if(decodedJsonObject.seller_id && decodedJsonObject.amount){
             this.seller_id = decodedJsonObject.seller_id;
             this.amount = decodedJsonObject.amount;
