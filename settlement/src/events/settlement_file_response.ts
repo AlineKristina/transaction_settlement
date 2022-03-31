@@ -1,5 +1,5 @@
 import amqplib from 'amqplib';
-import { SettlementFile } from '../logs/settlementFile';
+import { SettlementFile } from '../settlementResumeWriter/settlementFile';
 import { SettlementRepository } from '../api/repository/repository';
 
 export class  ListeningSettlement{
