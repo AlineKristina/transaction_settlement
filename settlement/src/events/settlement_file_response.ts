@@ -1,32 +1,26 @@
-import amqplib from 'amqplib';
 import { SettlementFile } from '../settlementResumeWriter/settlementFile';
 import { SettlementRepository } from '../api/repository/repository';
+import { RabbitMQConnection } from './rabbit_connection';
 
 export class  ListeningSettlement{
 
-    private _url = process.env.URL || "amqp://admin:admin@localhost:15672//";
-    private _settlement = process.env.RESPONSE || "settlement_file_response"
+    private _settlement = "settlement_file_response"
     private _settlementFile = new SettlementFile();
     private _repository : SettlementRepository;
+    private _connection = new RabbitMQConnection().createChannel();
 
     constructor(repository : SettlementRepository) {
         this._repository = repository;
     }
-    
-    createChannel() {
-        return amqplib.connect(this._url).then((conn) => {
-            return conn.createChannel();
-        });
-    }
 
     createQueue(){
-        this.createChannel().then((ch) => {
+        this._connection.then((ch) => {
             ch.assertQueue(this._settlement);
         });
     };
 
     listeningQueue(){
-        this.createChannel().then((ch) => {
+        this._connection.then((ch) => {
             ch.consume(this._settlement, async (msg) => {
                 if(msg){
                     const settlementInfo = JSON.parse(msg.content.toString());

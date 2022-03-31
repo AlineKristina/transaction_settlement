@@ -11,6 +11,7 @@ export class Tax_Calc {
 
     createChannel() {
         return amqplib.connect(this._url).then((conn) => {
+            console.log("Connected to RabbitMQ.");
             return conn.createChannel();
         })
     }

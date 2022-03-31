@@ -1,34 +1,27 @@
-import amqplib from 'amqplib';
+
 import { SettlementRepository } from '../api/repository/repository';
 import { EmitSettlement } from './settlement_file_request'; 
+import { RabbitMQConnection } from './rabbit_connection';
 
 export class TaxCalculationResponse {
+
+    private _response = "tax_calculation_response";
+    private _repository : SettlementRepository;
+    private _emitter = new EmitSettlement().sendToQueue;
+    private _connection = new RabbitMQConnection().createChannel();
     
     constructor(repository : SettlementRepository) {
         this._repository = repository;
     }
 
-    private _url = process.env.URL || "amqp://admin:admin@localhost:15672//";
-    private _response = process.env.RESPONSE || "tax_calculation_response";
-    private _repository : SettlementRepository;
-    private _emitter = new EmitSettlement().sendToQueue;
-
-    createChannel() {
-        return amqplib.connect(this._url).then((conn) => {
-            return conn.createChannel()
-        })
-    }
-
     createQueue(){
-        amqplib.connect(this._url).then((conn) => {
-            conn.createChannel().then((ch) => {
-                ch.assertQueue(this._response);
-            });
+        this._connection.then((ch) => {
+            ch.assertQueue(this._response);
         });
     }
 
     consumeQueue(){
-        this.createChannel().then((ch) => {
+        this._connection.then((ch) => {
             ch.consume(this._response, (msg) => {
                 console.log(msg);
                 const message = JSON.stringify(msg?.content.toString());
@@ -39,7 +32,7 @@ export class TaxCalculationResponse {
     }
 
    getTaxesById(id : Number){
-        this.createChannel().then((ch) => {
+        this._connection.then((ch) => {
             
             ch.consume(this._response, async (msg) => {
                 console.log(msg);
