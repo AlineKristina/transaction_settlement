@@ -17,6 +17,4 @@ export class  EmitSettlement{
             ch.sendToQueue(this._settlement, Buffer.from(message));
         })
     }
-
-    
 }

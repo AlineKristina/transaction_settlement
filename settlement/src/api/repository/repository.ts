@@ -3,14 +3,13 @@ import { SettlementModel } from '../../models/Settlements';
 import { SellerSettlementModel } from '../../models/SellerSettlements';
 import { DummyTransactions } from '../dummy_transactions/generateDummyTransactions';
 import { SettlementGenerator } from '../settlement_generator/settlement_generator';
-import { QueueRequestConnection } from '../../events/tax_calculation_request';
-import { QueueResponseConnection } from '../../events/tax_calculation_response';
+import { TaxCalculationRequest } from '../../events/tax_calculation_request';
 import { EmitSettlement } from '../../events/settlement_file_request';
-import { request, Request, Response } from 'express';
-
+import { Request, Response } from 'express';
 import { config } from 'dotenv';
 import mongoose from 'mongoose'
 import axios from 'axios';
+
 config();
 
 export class SettlementRepository {
@@ -18,8 +17,7 @@ export class SettlementRepository {
     private sellerSettlementModel  : mongoose.Model<any>;
     private transactionModel : mongoose.Model<any>;
     private settlementModel : mongoose.Model<any>;
-    private sendToQueue = new QueueRequestConnection().createChannel;
-    private getFromQueue = new QueueResponseConnection().getTaxesById;
+    private sendToQueue : TaxCalculationRequest;
     private emitSettlement = new EmitSettlement().sendToQueue;
     private dummyTransaction : DummyTransactions;
     private settlementId : any;
@@ -28,6 +26,7 @@ export class SettlementRepository {
         this.sellerSettlementModel = new SellerSettlementModel().sellerSettlementModel();
         this.transactionModel = new TransactionModel().transactionModel();
         this.settlementModel = new SettlementModel().settlementModel();
+        this.sendToQueue = new TaxCalculationRequest();
         this.dummyTransaction = new DummyTransactions();
     }
 
@@ -52,7 +51,6 @@ export class SettlementRepository {
         return settlement;
     }
 
-    //DOIS METODOS UNIDOS 
     private async getTransactionBySettlementDate(req : Request, res : Response){
         const DATE = process.env.SETTLEMENT_DATE || "2022-03-01";
         const transactionModel = this.transactionModel;
@@ -62,7 +60,6 @@ export class SettlementRepository {
     }
     async postSellerSettlement(req : Request, res : Response) {
         let groupedTransactions = await this.getTransactionBySettlementDate(req, res);
-        let settlementId = groupedTransactions[0].settlementId;
         let sellerSettlementModel = this.sellerSettlementModel;
         groupedTransactions.forEach(async (grouped) => {
             await sellerSettlementModel.create({
@@ -73,19 +70,13 @@ export class SettlementRepository {
                 bankCode : null,
                 bankAccount: null
             });
-            await this.sendToQueue(JSON.stringify(grouped));
+            await this.sendToQueue.createChannel(JSON.stringify(grouped));
             console.log(JSON.stringify(grouped));
         });
-        return settlementId;
     }
-    // FIM DA UNIAO
 
     async getSellerInformation(id : Number){
-        await axios.all([
-            axios.get(`http://localhost:3000/v1/sellers/${id}`).then((res) => {
-                let data = res.data;
-            })
-        ])
+            return axios.get(`http://localhost:3000/v1/sellers/${id}`);
     }
 
     async getSellerSettlement(id : Number){
@@ -93,12 +84,13 @@ export class SettlementRepository {
     }
 
     async findSettlement(param : any){
-        return await new SettlementModel().settlementModel().find({"settlementDate":"2022-03-01"});
+        const parameter = {"settlementDate":"2022-03-01"};
+        return await new SettlementModel().settlementModel().findOne(parameter);
     }
     
 
     async verifyRegisterTaxes() {
-        const sellerWithoutTax = this.sellerSettlementModel.find({taxValue : 0});
+        const sellerWithoutTax = await this.sellerSettlementModel.find({taxValue : 0});
         if (sellerWithoutTax == null) {
             return true;
         }
@@ -115,6 +107,29 @@ export class SettlementRepository {
         this.settlementModel.updateOne({settlementId : settlementId}, {});
     }
 
+    async getTransactionsCountBySettlement(settlementDate : string){
+        const DATE = process.env.SETTLEMENT_DATE || "2022-03-01";
+        const transactionModel = this.transactionModel;
+        const transactionsCount =  await (await transactionModel.find({settlementDate: DATE})).length;
+        return transactionsCount;
+    }
+
+    async getSettlementResume(settlementId : number = 0){
+        return this.settlementModel.find();
+    }
+
+    async postSettlementResume(settlement : string, sellersCount : number){
+        const parameter = JSON.parse(settlement).settlementId;
+        let settlementResume = await this.findSettlement({settlementId:parameter});
+        settlementResume.endDate = Date.now();
+        sellersCount = sellersCount;    
+        settlementResume.transactionsCount = await this.getTransactionsCountBySettlement(settlementResume.settlementDate);
+        let startDate = new Date(settlementResume.startDate);
+        let endDate = new Date(settlementResume.endDate);
+        settlementResume.elapsedMiliseconds = endDate.getTime() - startDate.getTime();
+
+        await this.settlementModel.updateOne({settlementId : settlementResume.settlementId}, settlementResume);
+    }
 
 
 
@@ -124,7 +139,7 @@ export class SettlementRepository {
 
 
 
-    // Inicia com um post, que chama o método, P2: INICIA A LIQUIDAÇÃO
+    /* Inicia com um post, que chama o método, P2: INICIA A LIQUIDAÇÃO
     async methodPart2(req : Request, res : Response){
         return await this.postSellerSettlement(req, res); // Agrupou e gravou no banco, ao fim de cada operação enviava um trigger pra queu
         //Retorna settlementId <3
@@ -134,7 +149,6 @@ export class SettlementRepository {
     //Tax_ calculator manda a msg pra queue, tax_calculator ouve, calcula o impost e devolve
     // Faz uma chamada em seller_information para obter o seller
     async methodPart3(req : Request, res : Response){
-        const settlementId = this.methodPart2(req, res); //Do i need this?
         //Ouvindo aqui
         const seller_id = 0;
         const seller = this.getSellerInformation(seller_id); //Retorna o seller
@@ -148,14 +162,13 @@ export class SettlementRepository {
         };
 
         //Criar o objeto durante a gravação.
-
     }
 
     //P4: Montar arquivo de liquidação - Escuta settlement_file_request
     async methodPart4(){
         //Método ouve o evento informando que o calculo das taxes foi finalizado, então chama o método
         // de gravação em arquivo   
-    }
+    }*/
 
 
 

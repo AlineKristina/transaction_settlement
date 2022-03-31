@@ -1,6 +1,21 @@
 version: '3'
 
 services:
+
+  rabbitmq:
+    image: "rabbitmq:3.9.13-management-alpine"
+    container_name: nodejs-rabbitmq-rabbitmq
+    hostname: rabbitmq
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    volumes:
+      - "./.rabbitmq_data:/var/lib/rabbitmq/mnesia"
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+
+
   mongo-express:
     image: mongo-express
     container_name: monguinhoexpress
@@ -19,7 +34,7 @@ services:
 
   mongo:
     image: mongo
-    container_name: monguinhooo
+    container_name: MongoDB
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: pass
