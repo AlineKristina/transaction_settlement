@@ -20,7 +20,7 @@ export class DummyData{
 
         do {
             this.dummySeller.seller_id++;
-            tempSeller.push(this.dummySeller);
+            tempSeller.push(this.dummySeller)
             
         } 
         while (this.dummySeller.seller_id < this.DUMMY_SELLERS);

@@ -6,7 +6,7 @@ import { SettlementGenerator } from '../settlement_generator/settlement_generato
 import { QueueRequestConnection } from '../../events/tax_calculation_request';
 import { QueueResponseConnection } from '../../events/tax_calculation_response';
 import { EmitSettlement } from '../../events/settlement_file_request';
-import { Request, Response } from 'express';
+import { request, Request, Response } from 'express';
 
 import { config } from 'dotenv';
 import mongoose from 'mongoose'
@@ -52,24 +52,20 @@ export class SettlementRepository {
         return settlement;
     }
 
-    async getTransactionBySettlementDate(req : Request, res : Response){
+    //DOIS METODOS UNIDOS 
+    private async getTransactionBySettlementDate(req : Request, res : Response){
         const DATE = process.env.SETTLEMENT_DATE || "2022-03-01";
-        const tModel = this.transactionModel;
-        const transactions =  await tModel.aggregate([{$match: { settlementDate: "2022-03-01" }},{ $group: {_id: "$sellerId",  amount: {$sum: "$amount"}}}]);
-        console.log(transactions);
+        const transactionModel = this.transactionModel;
+        const transactions =  await transactionModel.aggregate([{$match: { settlementDate: "2022-03-01" }},{ $group: {_id: "$sellerId",  amount: {$sum: "$amount"}}}]);
         res.sendStatus(200);
         return transactions;
     }
-
-    async findSettlementByDate(){
-        return await new SettlementModel().settlementModel().find({"settlementDate":"2022-03-01"});
-    }
-
     async postSellerSettlement(req : Request, res : Response) {
         let groupedTransactions = await this.getTransactionBySettlementDate(req, res);
+        let settlementId = groupedTransactions[0].settlementId;
         let sellerSettlementModel = this.sellerSettlementModel;
-        groupedTransactions.forEach((grouped) => {
-            sellerSettlementModel.create({
+        groupedTransactions.forEach(async (grouped) => {
+            await sellerSettlementModel.create({
                 seller_id : grouped._id,
                 settlementId : this.settlementId,
                 amount : grouped.amount,
@@ -77,52 +73,29 @@ export class SettlementRepository {
                 bankCode : null,
                 bankAccount: null
             });
-
-            this.sendToQueue(JSON.stringify(grouped));
+            await this.sendToQueue(JSON.stringify(grouped));
             console.log(JSON.stringify(grouped));
-
         });
+        return settlementId;
     }
+    // FIM DA UNIAO
 
     async getSellerInformation(id : Number){
-
-        let data;
-
         await axios.all([
             axios.get(`http://localhost:3000/v1/sellers/${id}`).then((res) => {
-                data = res.data
+                let data = res.data;
             })
         ])
-
-        return data;
     }
 
     async getSellerSettlement(id : Number){
         return await this.sellerSettlementModel.findOne({seller_id : id});
     }
 
-    async updateSellerSettlement(id : Number){
-        if (await this.verifyRegisterTaxes()){
-
-            const sellerInformation = await this.getSellerInformation(id);
-            const sellerSettlementInformation = await this.getSellerSettlement(id);
-            const getTaxes = this.getFromQueue(id);
-            const settlementInformation = await this.findSettlementById(sellerSettlementInformation.settlementId);
-            sellerSettlementInformation.taxValue = getTaxes.taxValue;
-            sellerSettlementInformation.bankAccount = sellerInformation.bankAccount;
-            sellerSettlementInformation.bankCode = sellerInformation.bankCode;
-            this.sellerSettlementModel.updateOne({seller_id:id}, sellerSettlementInformation);
-            const settlementMessage = {
-                settlementId : settlementInformation.settlementId,
-                settlementDate : settlementInformation.settlementDate
-            };
-            this.emitSettlement(JSON.stringify(settlementMessage));
-        }
+    async findSettlement(param : any){
+        return await new SettlementModel().settlementModel().find({"settlementDate":"2022-03-01"});
     }
-
-    async findSettlementById(id : Number){
-        return await this.settlementModel.findOne({settlementId:id});
-    }
+    
 
     async verifyRegisterTaxes() {
         const sellerWithoutTax = this.sellerSettlementModel.find({taxValue : 0});
@@ -141,4 +114,50 @@ export class SettlementRepository {
     async registerSettlement(settlementId : Number, data : object){
         this.settlementModel.updateOne({settlementId : settlementId}, {});
     }
+
+
+
+
+
+
+
+
+
+
+    // Inicia com um post, que chama o método, P2: INICIA A LIQUIDAÇÃO
+    async methodPart2(req : Request, res : Response){
+        return await this.postSellerSettlement(req, res); // Agrupou e gravou no banco, ao fim de cada operação enviava um trigger pra queu
+        //Retorna settlementId <3
+    }
+
+    //P3: RECEBE O IMPOSTO, inicia com o trigger na fila do tax_calculation, o app fica ouvindo
+    //Tax_ calculator manda a msg pra queue, tax_calculator ouve, calcula o impost e devolve
+    // Faz uma chamada em seller_information para obter o seller
+    async methodPart3(req : Request, res : Response){
+        const settlementId = this.methodPart2(req, res); //Do i need this?
+        //Ouvindo aqui
+        const seller_id = 0;
+        const seller = this.getSellerInformation(seller_id); //Retorna o seller
+        // Chamar sellerSettlement para atualizar o imposto e os dados bancários
+        let sellerSetllement = this.getSellerSettlement(seller_id) //Retorna o sellerSettlement
+        //Verifica o imposto
+        if(await this.verifyRegisterTaxes()){
+            sellerSetllement.taxValue = listener.taxValue;
+            sellerSettlement['bankCode', 'bankAccount'] = seller['bankCode', 'bankAccount'];
+            //trigga o evento no fim, avisando que o calculo de imposto foi finalizado
+        };
+
+        //Criar o objeto durante a gravação.
+
+    }
+
+    //P4: Montar arquivo de liquidação - Escuta settlement_file_request
+    async methodPart4(){
+        //Método ouve o evento informando que o calculo das taxes foi finalizado, então chama o método
+        // de gravação em arquivo   
+    }
+
+
+
+
 }

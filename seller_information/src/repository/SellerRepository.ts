@@ -21,9 +21,7 @@ export default class SellerRepository{
     async getAndPaginate(req : Request, res : Response) {
         const {page, pageSize, ...queryParameters} = req.query;
         let index = Number(pageSize) * (Number(page)-1);
-        
         const result = await this.sellerModel.find(queryParameters).skip(index).limit(Number(pageSize));
-        
         res.send(result)
     }
 
@@ -35,8 +33,6 @@ export default class SellerRepository{
     }
 
     async updateSeller(req : Request, res : Response) {
-        console.log(req.params.id)
-        console.log(req.body)
         await this.sellerModel.updateOne({seller_id:req.params.id}, {$set: req.body});
         return res.sendStatus(200);
     }
@@ -46,6 +42,7 @@ export default class SellerRepository{
         dummyData.forEach(async (dummyData) => {
             let tempObj = new this.sellerModel(dummyData);
             await tempObj.save();
-        })
+        });
+        res.sendStatus(200);
     }
 }

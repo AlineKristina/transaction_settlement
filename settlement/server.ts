@@ -13,7 +13,6 @@ app.post("/v1/transactions/dummy-data", async (req, res) => {
     await data.postDummyData(req, res);
 });
 
-//Realiza a gravação dos settlements
 app.post("/v1/settlements", async (req, res) => {
     await data.postSettlement(req, res);
 });
