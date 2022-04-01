@@ -31,13 +31,12 @@ export class SettlementRepository {
     }
 
     async postDummyData(req : Request, res : Response) {
-        const tModel = this.transactionModel;
+        const transactionModel = this.transactionModel;
         
         const data = this.dummyTransaction.generateDummyTransaction();
         
         for(let i = 0; i < data.length; i++){
-            let model = new tModel(data[i]);
-            await model.save();
+            await transactionModel.create(data[i]);
         }
 
         res.sendStatus(200);
@@ -45,7 +44,7 @@ export class SettlementRepository {
 
     async postSettlement(req : Request, res : Response){
         const settlement = new SettlementGenerator().generateSettlement();
-        const settlementModel = this.settlementModel.create(settlement);
+        const settlementModel = await this.settlementModel.create(settlement);
         this.settlementId = settlement.settlementId;
         res.sendStatus(200);
         return settlement;
@@ -72,11 +71,12 @@ export class SettlementRepository {
             });
             await this.sendToQueue.createChannel(JSON.stringify(grouped));
             console.log(JSON.stringify(grouped));
+            res.sendStatus(200);
         });
     }
 
     async getSellerInformation(id : Number){
-            return axios.get(`http://localhost:3000/v1/sellers/${id}`);
+            return await axios.get(`http://localhost:3000/v1/sellers/${id}`);
     }
 
     async getSellerSettlement(id : Number){
@@ -104,7 +104,7 @@ export class SettlementRepository {
     }
 
     async registerSettlement(settlementId : Number, data : object){
-        this.settlementModel.updateOne({settlementId : settlementId}, {});
+        await this.settlementModel.updateOne({settlementId : settlementId}, {});
     }
 
     async getTransactionsCountBySettlement(settlementDate : string){
@@ -114,8 +114,10 @@ export class SettlementRepository {
         return transactionsCount;
     }
 
-    async getSettlementResume(settlementId : number = 0){
-        return this.settlementModel.find();
+    async getSettlementResume(req : Request, res : Response){
+        const settlementResume = await this.settlementModel.find();
+        res.send(settlementResume);
+        res.end;
     }
 
     async postSettlementResume(settlement : string, sellersCount : number){

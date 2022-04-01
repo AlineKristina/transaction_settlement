@@ -22,7 +22,7 @@ export default class SellerRepository{
         const {page, pageSize, ...queryParameters} = req.query;
         let index = Number(pageSize) * (Number(page)-1);
         const result = await this.sellerModel.find(queryParameters).skip(index).limit(Number(pageSize));
-        res.send(result)
+        res.sendStatus(200);
     }
 
     async createSeller(req : Request, res : Response) {

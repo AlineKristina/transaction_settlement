@@ -16,7 +16,6 @@ conn();
 
 const _repository = new SellerRepository()
 const _service = new SellerServices(_repository)
-//const _controller = new SellerController(_connection)
 
 const serverConnection = express();
 
@@ -49,5 +48,5 @@ serverConnection.post("/v1/sellers/dummy-data", (req, res) => {
 })
 
 serverConnection.listen(PORT, () => {
-    console.log("Server connected");
+    console.log(`Listening on PORT ${PORT}`);
 })

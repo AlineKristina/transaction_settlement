@@ -1,48 +1,36 @@
 import amqplib from 'amqplib';
-import { messageConverter } from '../model/messageConverter';
+import { ConversorJsonString } from '../utils/string_json_conversor';
 
 export class Tax_Calc {
 
     private readonly _url : string; 
+    private readonly _conversor = new ConversorJsonString();
 
     constructor(url: string) {
         this._url = url;
     }
 
     createChannel() {
-        return amqplib.connect(this._url).then((conn) => {
-            console.log("Connected to RabbitMQ.");
-            return conn.createChannel();
-        })
-    }
+        amqplib.connect(this._url).then((conn) => {
+            conn.createConfirmChannel().then((ch) => {
+                console.log('Connected to RabbitMQ.');
 
-    createQueue(queueName : string){
-        this.createChannel().then(async (ch) => {
-            await ch.assertQueue(queueName);
+                ch.consume('tax_calculation_request', (msg) => {
+                    console.log('aquiii')
+                    let convertedMessage = msg!.content.toString();
+                    const seller_id = this._conversor.returnKeyFromArray(this._conversor.convertStringArray(convertedMessage), 'seller_id');
+                    const amount = this._conversor.returnKeyFromArray(this._conversor.convertStringArray(convertedMessage), 'amount');
+                    const tax_value = ((Number.parseInt(amount)) * 6)/100;
+                    const calculatedTax = {seller_id: seller_id,
+                                           amount: amount,
+                                           tax_value: tax_value};
+                    ch.ack(msg!);
+                    ch.sendToQueue('tax_calculation_response', Buffer.from(JSON.stringify(calculatedTax)));
+                })
+            })
+            
         })
-    }
 
-    sendToQueue(queue : string, message : string) {
-        this.createChannel().then((ch) => {
-            ch.sendToQueue(queue, Buffer.from(message));
-        });
-    }
-
-    consumeQueue(receivingFrom : string, sendingTo : string){
-        this.createChannel().then(async (ch) => {
-            await ch.consume(receivingFrom, (msg) => {
-                if(msg) {
-                    // Message received and calculating the tax, the result is the message that will
-                    // be send to the response queue
-                    let msgConverted = new messageConverter(msg.content).returnMessageConverted();
-                    ch.ack(msg);
-                    console.log(`Message received ${msg.content}`);
-                    this.sendToQueue(sendingTo, JSON.stringify(msgConverted));
-                }
-                else {
-                    return null;
-                }
-            });
-        })
+        
     }
 }

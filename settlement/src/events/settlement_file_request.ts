@@ -5,12 +5,6 @@ export class  EmitSettlement{
     private _settlement = "settlement_file_request";
     private _connection = new RabbitMQConnection().createChannel();
 
-    createQueue(){
-        this._connection.then((ch) => {
-            ch.assertQueue(this._settlement);
-        });
-    };
-
     sendToQueue(message : string){
         this._connection.then((ch) => {
             ch.assertQueue(this._settlement)

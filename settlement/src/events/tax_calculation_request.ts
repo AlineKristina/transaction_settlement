@@ -7,13 +7,8 @@ export class TaxCalculationRequest {
 
     createChannel(message : string) {
         this._connection.then((channel) => {
-            channel.sendToQueue(this._request, Buffer.from(message));
-        })
-    }
-
-    createQueue() {
-        this._connection.then((channel) => {
             channel.assertQueue(this._request);
+            channel.sendToQueue(this._request, Buffer.from(message));
         })
     }
 }

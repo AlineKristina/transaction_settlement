@@ -1,8 +1,7 @@
 import SellerRepository from "../repository/SellerRepository";
-import {ISellerService} from "./ISellerService";
 import {Request, Response} from 'express';
 
-export class SellerServices implements ISellerService{
+export class SellerServices{
 
     private _repository;
 
@@ -12,7 +11,6 @@ export class SellerServices implements ISellerService{
 
     async getById(req : Request, res : Response) {
         const seller = await this._repository.getById(req, res);
-        console.log(seller);
         res.send(seller);
     }
 
