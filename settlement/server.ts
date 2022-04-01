@@ -21,10 +21,6 @@ app.post("/v1/settlements", async (req, res) => {
     await _repository.postSellerSettlement(req, res);
 });
 
-app.post("/v1/sellerSettlements", async (req, res) => {
-    await _repository.postSellerSettlement(req, res);
-})
-
 app.get("/v1/settlements", async (req, res) => {
     await _repository.getSettlementResume(req, res);
 })

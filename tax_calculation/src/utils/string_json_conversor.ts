@@ -18,7 +18,23 @@ export class ConversorJsonString{
         });
     }
 
-    returnKeyFromArray(jsonArray : string[][], key : string){
-        return jsonArray.find((value) => value[0] == key)![1]
+    returnKeyFromArraySeller_Id(jsonArray : string[][]){
+        for (let i = 0; i < jsonArray.length; i++){
+            for (let j = 0; j < 2; j++){
+                if (jsonArray[i][j] == '"_id"'){
+                    return jsonArray[i][j+1];
+                }
+            }
+        }
+    }
+
+    returnKeyFromArrayAmount(jsonArray : string[][]){
+        for (let i = 0; i < jsonArray.length; i++){
+            for (let j = 0; j < 2; j++){
+                if (jsonArray[i][j] == '"amount"'){
+                    return jsonArray[i][j+1];
+                }
+            }
+        }
     }
 }

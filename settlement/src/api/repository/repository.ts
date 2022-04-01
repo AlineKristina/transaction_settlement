@@ -71,7 +71,7 @@ export class SettlementRepository {
             });
             await this.sendToQueue.createChannel(JSON.stringify(grouped));
             console.log(JSON.stringify(grouped));
-            res.sendStatus(200);
+            return;
         });
     }
 

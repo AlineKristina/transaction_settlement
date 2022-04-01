@@ -18,12 +18,13 @@ export class Tax_Calc {
                 ch.consume('tax_calculation_request', (msg) => {
                     console.log('aquiii')
                     let convertedMessage = msg!.content.toString();
-                    const seller_id = this._conversor.returnKeyFromArray(this._conversor.convertStringArray(convertedMessage), 'seller_id');
-                    const amount = this._conversor.returnKeyFromArray(this._conversor.convertStringArray(convertedMessage), 'amount');
-                    const tax_value = ((Number.parseInt(amount)) * 6)/100;
+                    const seller_id = this._conversor.returnKeyFromArraySeller_Id(this._conversor.convertStringArray(convertedMessage));
+                    const amount = this._conversor.returnKeyFromArrayAmount(this._conversor.convertStringArray(convertedMessage));
+                    console.log("seller: " + seller_id + " amount: " + amount);
+                    //const tax_value = ((Number.parseInt(amount)) * 6)/100;
                     const calculatedTax = {seller_id: seller_id,
                                            amount: amount,
-                                           tax_value: tax_value};
+                                           tax_value: 0};
                     ch.ack(msg!);
                     ch.sendToQueue('tax_calculation_response', Buffer.from(JSON.stringify(calculatedTax)));
                 })
