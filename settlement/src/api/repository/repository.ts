@@ -4,7 +4,6 @@ import { SellerSettlementModel } from '../../models/SellerSettlements';
 import { DummyTransactions } from '../dummy_transactions/generateDummyTransactions';
 import { SettlementGenerator } from '../settlement_generator/settlement_generator';
 import { TaxCalculationRequest } from '../../events/tax_calculation_request';
-import { EmitSettlement } from '../../events/settlement_file_request';
 import { Request, Response } from 'express';
 import { config } from 'dotenv';
 import mongoose from 'mongoose'
@@ -18,7 +17,6 @@ export class SettlementRepository {
     private transactionModel : mongoose.Model<any>;
     private settlementModel : mongoose.Model<any>;
     private sendToQueue : TaxCalculationRequest;
-    private emitSettlement = new EmitSettlement().sendToQueue;
     private dummyTransaction : DummyTransactions;
     private settlementId : any;
     
@@ -75,6 +73,10 @@ export class SettlementRepository {
         });
     }
 
+    async postFinalizedSellerSettlement(id : Number, sellerSettlement : any){
+        await this.sellerSettlementModel.create(sellerSettlement);
+    }
+
     async getSellerInformation(id : Number){
             return await axios.get(`http://localhost:3000/v1/sellers/${id}`);
     }
@@ -85,7 +87,7 @@ export class SettlementRepository {
 
     async findSettlement(param : any){
         const parameter = {"settlementDate":"2022-03-01"};
-        return await new SettlementModel().settlementModel().findOne(parameter);
+        return await this.settlementModel.findOne(parameter);
     }
     
 

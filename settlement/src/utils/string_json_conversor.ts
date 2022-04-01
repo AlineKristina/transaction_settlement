@@ -19,7 +19,17 @@ export class ConversorJsonString{
     }
 
     returnKeyFromArraySeller_Id(jsonArray : string[][]){
-        console.log(jsonArray)
+        for (let i = 0; i < jsonArray.length; i++){
+            for (let j = 0; j < 2; j++){
+                console.log(jsonArray[i][j]);
+                if (jsonArray[i][j] == '"_id"'){
+                    return jsonArray[i][j+1];
+                }
+            }
+        }
+    }
+
+    returnKeyFromArrayAmount(jsonArray : string[][]){
         for (let i = 0; i < jsonArray.length; i++){
             for (let j = 0; j < 2; j++){
                 console.log(jsonArray[i][j]);
@@ -30,13 +40,33 @@ export class ConversorJsonString{
         }
     }
 
-    returnKeyFromArrayAmount(jsonArray : string[][]){
-        console.log(jsonArray)
-        
+    returnKeyFromArrayTaxValue(jsonArray : string[][]){
         for (let i = 0; i < jsonArray.length; i++){
             for (let j = 0; j < 2; j++){
                 console.log(jsonArray[i][j]);
-                if (jsonArray[i][j] == '"amount"'){
+                if (jsonArray[i][j] == '"taxValue"'){
+                    return jsonArray[i][j+1];
+                }
+            }
+        }
+    }
+
+    returnKeyFromArraySettlementId(jsonArray : string[][]){
+        for (let i = 0; i < jsonArray.length; i++){
+            for (let j = 0; j < 2; j++){
+                console.log(jsonArray[i][j]);
+                if (jsonArray[i][j] == '"settlementId"'){
+                    return jsonArray[i][j+1];
+                }
+            }
+        }
+    }
+
+    returnKeyFromArraySettlementDate(jsonArray : string[][]){
+        for (let i = 0; i < jsonArray.length; i++){
+            for (let j = 0; j < 2; j++){
+                console.log(jsonArray[i][j]);
+                if (jsonArray[i][j] == '"settlementDate"'){
                     return jsonArray[i][j+1];
                 }
             }

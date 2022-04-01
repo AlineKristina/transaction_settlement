@@ -15,7 +15,7 @@ export default class SellerRepository{
     }
 
     async getById(req : Request, res : Response){
-        return await this.sellerModel.find({seller_id: req.params.id});
+            return await this.sellerModel.find({seller_id: req.params.id});
     }
 
     async getAndPaginate(req : Request, res : Response) {

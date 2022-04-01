@@ -5,7 +5,7 @@ import { ConversorJsonString } from '../utils/string_json_conversor';
 
 export class  ListeningSettlement{
 
-    private _settlement = "settlement_file_response"
+    private _settlement = "settlement_file_request"
     private _settlementFile = new SettlementFile();
     private _repository : SettlementRepository;
     private _connection = new RabbitMQConnection().createChannel();
@@ -17,17 +17,19 @@ export class  ListeningSettlement{
 
     listeningQueue(){
         this._connection.then((ch) => {
-            ch.assertQueue(this._settlement);
             ch.consume(this._settlement, async (msg) => {
                 if(msg){
-                    const settlementInfoString = msg.content.toString();
-                    ch.ack(msg);
-                    const settlementId = this._conversor.returnKeyFromArray(this._conversor.convertStringArray(settlementInfoString), 'settlementId');
-                    const settlementDate = this._conversor.returnKeyFromArray(this._conversor.convertStringArray(settlementInfoString), 'settlementDate');
+                    const settlementInfoString = await msg.content.toString();
+                    console.log(settlementInfoString);
+                    const settlementInfo = await JSON.parse(settlementInfoString)
+                    const settlementId = settlementInfo.settlementId;
+                    const settlementDate = settlementInfo.settlementDate;
                     const sellers = await this._repository.getSellersBySettlement(settlementId);
                     const sellersCount = sellers.length;
-                    this._settlementFile.writeNewFile(sellers, settlementDate);
-                    this._repository.postSettlementResume(settlementInfoString, sellersCount);
+                    console.log("chegou aqui?");
+                    await this._settlementFile.writeNewFile(sellers, settlementDate);
+                    await this._repository.postSettlementResume(settlementInfoString, sellersCount);
+                    ch.ack(msg);
                 }
             })
         })
